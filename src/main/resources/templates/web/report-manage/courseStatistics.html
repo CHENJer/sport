@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>飞羽健身管理系统</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}">
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script>
+        function getIsRecommended(data) {
+            /*0未开课，1正在开课，2结束，3下架（教练离职）*/
+            var isRecommended = data.isRecommended;
+            var btns = "";
+            if (isRecommended == "0") {
+                return "无";
+            }
+            if (isRecommended == "1") {
+                btns += '<a class="" style="color:#ed2a4a">推荐</a>';
+            }
+            return btns;
+        }
+        var option1 = {
+            elem: '#courseStatisticsTable',
+            id:'courseStatisticsId',
+            skin: 'line',
+            height: 523,
+            url: '/report/queryCourseStatistics', //数据接口
+            page: true, //开启分页
+            limit: 10 ,
+            cols: [
+                [ //表头
+                    {field: 'courseName', title: '课程名'},
+                    {field: 'courseTypeName', title: '课程分类' },
+                    {field: 'userName', title: '教练名称', sort: true},
+                    {field: 'buyNum', title: '购买人数', sort: true},
+                    {field: 'clickNum', title: '查看人数', sort: true},
+                    {field: 'clickNum', title: '是否推荐',templet: getIsRecommended, sort: true},
+                    {field: 'startTime', title: '课程开始时间',
+                        templet : "<div>{{layui.util.toDateString(d.ordertime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                        width: 200,
+                        sort: true},
+                ]
+            ],
+            toolbar: '#accountAdd'
+        };
+        //JavaScript代码区域
+        layui.use(["element","jquery","layer","form","table"], function(){
+            var table = layui.table;
+            var layer = layui.layer;
+            var element = layui.element;
+            table.render(option1);
+            window.queryCourse = function () {
+                var courseName = $("#courseName").val();
+                var option2 = {
+                    elem: '#courseStatisticsTable',
+                    id:'courseStatisticsId',
+                    skin: 'line',
+                    height: 523,
+                    url: '/report/queryCourseStatistics?courseName='+courseName, //数据接口
+                    page: true, //开启分页
+                    limit: 10 ,
+                    cols: [
+                        [ //表头
+                            {field: 'courseName', title: '课程名'},
+                            {field: 'courseTypeName', title: '课程分类' },
+                            {field: 'userName', title: '教练名称', sort: true},
+                            {field: 'buyNum', title: '购买人数', sort: true},
+                            {field: 'clickNum', title: '查看人数', sort: true},
+                            {field: 'clickNum', title: '是否推荐',templet: getIsRecommended, sort: true},
+                            {field: 'startTime', title: '课程开始时间',
+                                templet : "<div>{{layui.util.toDateString(d.ordertime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                                width: 200,
+                                sort: true},
+                        ]
+                    ],
+                    toolbar: '#accountAdd'
+                };
+                table.render(option2);
+            }
+        });
+
+    </script>
+
+</head>
+<body>
+<fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">
+    <legend>课程统计</legend>
+</fieldset>
+<div class="layui-row">
+    <div class="layui-input-inline">
+        <input type="text" name="courseName" id="courseName"  placeholder="请输入课程名称" style="width: 200px;margin-right: 20px;" class="layui-input">
+    </div>
+    <button class="layui-btn layui-btn-sm" lay-event="queryCourse" onclick="queryCourse()">查询</button>
+    <table id="courseStatisticsTable" lay-filter="courseStatisticsFilter"></table>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>飞羽健身管理系统</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}">
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script>
+        var option1 = {
+            elem: '#courseListTable',
+            id:'courseList',
+            skin: 'line',
+            height: 523,
+            url: '/cource/courseManageFindAll?courseType=0', //数据接口
+            page: true, //开启分页
+            limit: 10 ,
+            cols: [
+                [ //表头
+                    {field: 'courseName', title: '课程名',width: 180},
+                    {field: 'courseCode', title: '课程编号',width: 180 },
+                    {field: 'coueseTypeName', title: '课程分类',width: 120, sort: true},
+                    {field: 'courseDesc', title: '课程描述',width: 200},
+                    {field: 'coursePrice', title: '课程价格',width: 120, sort: true},
+                    {field: 'startTime', title: '课程开始时间',
+                        templet : "<div>{{layui.util.toDateString(d.startTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                        width: 200,
+                        sort: true},
+                    {field: 'endTime', title: '课程结束时间',
+                        templet : "<div>{{layui.util.toDateString(d.endTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                        width: 200,
+                        sort: true},
+                    {field: 'status', title: '课程状态', templet: getStatu,width: 120,  sort: true},
+                    {field: 'isRecommended', title: '是否推荐',templet: getIsRecommended,width: 120,  sort: true},
+                    {field: 'right', title: '操作', toolbar: '#courseOperate',width:220},
+                ]
+            ],
+        };
+        var option2 = {
+            elem: '#likedCourseTable',
+            id:'likedCourse',
+            skin: 'line',
+            height: 523,
+            url: '/cource/courseManageFindAll?courseType=1', //数据接口
+            page: true, //开启分页
+            limit: 10 ,
+            cols: [
+                [ //表头
+                    {field: 'courseName', title: '课程名',width: 180},
+                    {field: 'courseCode', title: '课程编号',width: 180 },
+                    {field: 'coueseTypeName', title: '课程分类',width: 120, sort: true},
+                    {field: 'courseDesc', title: '课程描述',width: 200},
+                    {field: 'coursePrice', title: '课程价格',width: 120, sort: true},
+                    {field: 'startTime', title: '课程开始时间',
+                        templet : "<div>{{layui.util.toDateString(d.startTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                        width: 200,
+                        sort: true},
+                    {field: 'endTime', title: '课程结束时间',
+                        templet : "<div>{{layui.util.toDateString(d.endTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                        width: 200,
+                        sort: true},
+                    {field: 'status', title: '课程状态', templet: getStatu,width: 120,  sort: true},
+                    {field: 'isRecommended', title: '是否推荐',templet: getIsRecommended,width: 120,  sort: true},
+                    {field: 'right', title: '操作', toolbar: '#courseOperate',width:220},
+                ]
+            ],
+        };
+        var option3 = {
+            elem: '#endCourseTable',
+            skin: 'line',
+            id:'endCourse',
+            height: 523,
+            url: '/cource/courseManageFindAll?courseType=2', //数据接口
+            page: true, //开启分页
+            limit: 10 ,
+            cols: [
+                [ //表头
+                    {field: 'courseName', title: '课程名',width: 180},
+                    {field: 'courseCode', title: '课程编号',width: 180 },
+                    {field: 'coueseTypeName', title: '课程分类',width: 120, sort: true},
+                    {field: 'courseDesc', title: '课程描述',width: 200},
+                    {field: 'coursePrice', title: '课程价格',width: 120, sort: true},
+                    {field: 'startTime', title: '课程开始时间',
+                        templet : "<div>{{layui.util.toDateString(d.startTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                        width: 200,
+                        sort: true},
+                    {field: 'endTime', title: '课程结束时间',
+                        templet : "<div>{{layui.util.toDateString(d.endTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                        width: 200,
+                        sort: true},
+                    {field: 'status', title: '课程状态', templet: getStatu,width: 120,  sort: true},
+                    {field: 'isRecommended', title: '是否推荐',templet: getIsRecommended,width: 120,  sort: true},
+                    {field: 'right', title: '操作', toolbar: '#courseOperate',width:220},
+                ]
+            ],
+        };
+        var option4 = {
+            elem: '#reviewCourseTable',
+            skin: 'line',
+            id:'reviewCourse',
+            height: 523,
+            url: '/cource/courseManageFindAll?isApplyEnd=1', //数据接口
+            page: true, //开启分页
+            limit: 10 ,
+            cols: [
+                [ //表头
+                    {field: 'courseName', title: '课程名',width: 180},
+                    {field: 'courseCode', title: '课程编号',width: 180 },
+                    {field: 'coueseTypeName', title: '课程分类',width: 120, sort: true},
+                    {field: 'courseDesc', title: '课程描述',width: 200},
+                    {field: 'coursePrice', title: '课程价格',width: 120, sort: true},
+                    {field: 'startTime', title: '课程开始时间',
+                        templet : "<div>{{layui.util.toDateString(d.startTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                        width: 200,
+                        sort: true},
+                    {field: 'endTime', title: '课程结束时间',
+                        templet : "<div>{{layui.util.toDateString(d.endTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                        width: 200,
+                        sort: true},
+                    {field: 'status', title: '课程状态', templet: getStatu,width: 120,  sort: true},
+                    {field: 'isRecommended', title: '是否推荐',templet: getIsRecommended,width: 120,  sort: true},
+                    {field: 'right', title: '操作', toolbar: '#reviewOperate',width:220},
+                ]
+            ],
+        };
+        //自定义“状态”列
+        function getStatu(data) {
+            /*0未开课，1正在开课，2结束，3下架（教练离职）*/
+            var status = data.status;
+            var btns = "";
+            if (status == "0") {
+                return "未开课";
+            }
+            if (status == "1") {
+                btns += '<a class="" style="color:#2eb85c">正在开课</a>';
+            }
+            if (status == "2") {
+                btns += '<a class="" style="color:#696969">结束</a>';
+            }
+            if (status == "3") {
+                btns += '<a class="" style="color:#ed2a4a">已下架</a>';
+            }
+            return btns;
+        }
+        function getIsRecommended(data) {
+            /*0未开课，1正在开课，2结束，3下架（教练离职）*/
+            var isRecommended = data.isRecommended;
+            var btns = "";
+            if (isRecommended == "0") {
+                return "无";
+            }
+            if (isRecommended == "1") {
+                btns += '<a class="" style="color:#ed2a4a">推荐</a>';
+            }
+            return btns;
+        }
+
+        //JavaScript代码区域
+        layui.use(["element","jquery","layer","form","table"], function(){
+            var table = layui.table;
+            var layer = layui.layer;
+            var element = layui.element;
+            table.render(option1);
+            //一些事件监听
+            element.on('tab(myTab)', function(data){
+                if(data.index == 0){
+                    table.render(option1);
+                }else if(data.index == 1){
+                    table.render(option2);
+                }else if(data.index == 2){
+                    table.render(option3);
+                }else if(data.index == 3){
+                    table.render(option4);
+                }
+            });
+            /*表格头的*/
+            table.on('toolbar()',function (obj) {
+                var layEvent = obj.event;
+                if (layEvent=='addAccount'){
+                    layer.open({
+                        title: '',
+                        type: 2,
+                        content: ['/account/addInit', 'no' ],
+                        area: ['600px', '500px']
+
+                    });
+
+                }
+
+            });
+            /*表格数据的*/
+            table.on('tool()',function (obj) {
+                var layEvent = obj.event;
+                if (layEvent=='viewCourse'){
+                    var courseVideo = obj.data.courseVideo;
+                    var loadstr='<video width="100%" height="100%" src='+courseVideo+' controls="controls" autobuffer="autobuffer"  ' +
+                        'autoplay="autoplay" loop="loop"></video>'
+                    layer.open({
+                        type:1,
+                        title: "【"+obj.data.courseName+"】课程视频",
+                        area: ['730px', '460px'],
+                        shade: 0,
+                        closeBtn: 1,
+                        content: loadstr,
+                    });
+                }
+                if (layEvent=='viewPackage'){
+                    layer.open({
+                        title: "【"+obj.data.courseName+"】课程小节",
+                        type: 2,
+                        content: ['/cource/findPackageInit?courseCode='+obj.data.courseCode, 'yes' ],
+                        area: ['850px', '450px']
+
+                    });
+                }
+                if (layEvent=='setStatus'){
+                    layer.open({
+                        title: '',
+                        type: 2,
+                        content: ['/cource/setCourse?id='+obj.data.id, 'no' ],
+                        area: ['600px', '430px']
+
+                    });
+                }
+                if (layEvent=='reviewStatus'){
+                    layer.open({
+                        title: '',
+                        type: 2,
+                        content: ['/cource/reviewCourse?id='+obj.data.id, 'no' ],
+                        area: ['600px', '430px']
+
+                    });
+                }
+            })
+            window.queryCourse1 = function () {
+                var queryCourse1 = $("#queryCourse1").val();
+                var queryOption1 = {
+                    elem: '#courseListTable',
+                    id:'courseList',
+                    skin: 'line',
+                    height: 523,
+                    url: '/cource/courseManageFindAll?courseType=0&courseName='+queryCourse1, //数据接口
+                    page: true, //开启分页
+                    limit: 10 ,
+                    cols: [
+                        [ //表头
+                            {field: 'courseName', title: '课程名',width: 180},
+                            {field: 'courseCode', title: '课程编号',width: 180 },
+                            {field: 'coueseTypeName', title: '课程分类',width: 120, sort: true},
+                            {field: 'courseDesc', title: '课程描述',width: 200},
+                            {field: 'coursePrice', title: '课程价格',width: 120, sort: true},
+                            {field: 'startTime', title: '课程开始时间',
+                                templet : "<div>{{layui.util.toDateString(d.startTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                                width: 200,
+                                sort: true},
+                            {field: 'endTime', title: '课程结束时间',
+                                templet : "<div>{{layui.util.toDateString(d.endTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                                width: 200,
+                                sort: true},
+                            {field: 'status', title: '课程状态', templet: getStatu,width: 120,  sort: true},
+                            {field: 'isRecommended', title: '是否推荐',templet: getIsRecommended,width: 120,  sort: true},
+                            {field: 'right', title: '操作', toolbar: '#courseOperate',width:220},
+                        ]
+                    ],
+                }
+                table.render(queryOption1);
+            }
+            window.queryCourse2 = function () {
+                var queryCourse2 = $("#queryCourse2").val();
+                var queryOption2 = {
+                    elem: '#likedCourseTable',
+                    id:'likedCourse',
+                    skin: 'line',
+                    height: 523,
+                    url: '/cource/courseManageFindAll?courseType=1&courseName='+queryCourse2, //数据接口
+                    page: true, //开启分页
+                    limit: 10 ,
+                    cols: [
+                        [ //表头
+                            {field: 'courseName', title: '课程名',width: 180},
+                            {field: 'courseCode', title: '课程编号',width: 180 },
+                            {field: 'coueseTypeName', title: '课程分类',width: 120, sort: true},
+                            {field: 'courseDesc', title: '课程描述',width: 200},
+                            {field: 'coursePrice', title: '课程价格',width: 120, sort: true},
+                            {field: 'startTime', title: '课程开始时间',
+                                templet : "<div>{{layui.util.toDateString(d.startTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                                width: 200,
+                                sort: true},
+                            {field: 'endTime', title: '课程结束时间',
+                                templet : "<div>{{layui.util.toDateString(d.endTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                                width: 200,
+                                sort: true},
+                            {field: 'status', title: '课程状态', templet: getStatu,width: 120,  sort: true},
+                            {field: 'isRecommended', title: '是否推荐',templet: getIsRecommended,width: 120,  sort: true},
+                            {field: 'right', title: '操作', toolbar: '#courseOperate',width:220},
+                        ]
+                    ],
+                }
+                table.render(queryOption2);
+            }
+            window.queryCourse3 = function () {
+                var queryCourse3 = $("#queryCourse3").val();
+                var queryOption3 = {
+                    elem: '#endCourseTable',
+                    id:'endCourse',
+                    skin: 'line',
+                    height: 523,
+                    url: '/cource/courseManageFindAll?courseType=2&courseName='+queryCourse3, //数据接口
+                    page: true, //开启分页
+                    limit: 10 ,
+                    cols: [
+                        [ //表头
+                            {field: 'courseName', title: '课程名',width: 180},
+                            {field: 'courseCode', title: '课程编号',width: 180 },
+                            {field: 'coueseTypeName', title: '课程分类',width: 120, sort: true},
+                            {field: 'courseDesc', title: '课程描述',width: 200},
+                            {field: 'coursePrice', title: '课程价格',width: 120, sort: true},
+                            {field: 'startTime', title: '课程开始时间',
+                                templet : "<div>{{layui.util.toDateString(d.startTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                                width: 200,
+                                sort: true},
+                            {field: 'endTime', title: '课程结束时间',
+                                templet : "<div>{{layui.util.toDateString(d.endTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                                width: 200,
+                                sort: true},
+                            {field: 'status', title: '课程状态', templet: getStatu,width: 120,  sort: true},
+                            {field: 'isRecommended', title: '是否推荐',templet: getIsRecommended,width: 120,  sort: true},
+                            {field: 'right', title: '操作', toolbar: '#courseOperate',width:220},
+                        ]
+                    ],
+                }
+                table.render(queryOption3);
+            }
+            window.queryCourse4 = function () {
+                var queryCourse4 = $("#queryCourse4").val();
+                var queryOption4 = {
+                    elem: '#reviewCourseTable',
+                    id:'reviewCourse',
+                    skin: 'line',
+                    height: 523,
+                    url: '/cource/courseManageFindAll?isApplyEnd=1&courseName='+queryCourse3, //数据接口
+                    page: true, //开启分页
+                    limit: 10 ,
+                    cols: [
+                        [ //表头
+                            {field: 'courseName', title: '课程名',width: 180},
+                            {field: 'courseCode', title: '课程编号',width: 180 },
+                            {field: 'coueseTypeName', title: '课程分类',width: 120, sort: true},
+                            {field: 'courseDesc', title: '课程描述',width: 200},
+                            {field: 'coursePrice', title: '课程价格',width: 120, sort: true},
+                            {field: 'startTime', title: '课程开始时间',
+                                templet : "<div>{{layui.util.toDateString(d.startTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                                width: 200,
+                                sort: true},
+                            {field: 'endTime', title: '课程结束时间',
+                                templet : "<div>{{layui.util.toDateString(d.endTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                                width: 200,
+                                sort: true},
+                            {field: 'status', title: '课程状态', templet: getStatu,width: 120,  sort: true},
+                            {field: 'isRecommended', title: '是否推荐',templet: getIsRecommended,width: 120,  sort: true},
+                            {field: 'right', title: '操作', toolbar: '#reviewOperate',width:220},
+                        ]
+                    ],
+                }
+                table.render(queryOption4);
+            }
+        });
+    </script>
+
+    <script type="text/html" id="courseOperate">
+        <div class="layui-btn-container">
+            <button class="layui-btn layui-btn-sm" lay-event="viewCourse">课程视频</button>
+            <button class="layui-btn layui-btn-sm" lay-event="viewPackage">查看小节</button>
+            <button class="layui-btn layui-btn-sm  layui-btn-danger" lay-event="setStatus">设置</button>
+        </div>
+    </script>
+    <script type="text/html" id="reviewOperate">
+        <div class="layui-btn-container">
+            <button class="layui-btn layui-btn-sm  layui-btn-danger" lay-event="reviewStatus">设置</button>
+        </div>
+    </script>
+
+</head>
+<body>
+<fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">
+    <legend>课程管理</legend>
+</fieldset>
+<div class="layui-tab layui-tab-brief" lay-filter="myTab">
+    <ul class="layui-tab-title">
+        <li class="layui-this" lay-id="courseList">课程列表</li>
+        <li lay-id="likedCouese">推荐课程</li>
+        <li lay-id="endCourse">结束课程</li>
+        <li lay-id="endCourse">申请下架课程</li>
+    </ul>
+    <div class="layui-tab-content">
+        <!--账号设置-->
+        <div class="layui-tab-item layui-show">
+            <div class="layui-input-inline">
+                <input type="text" name="queryCourse1" id="queryCourse1"  placeholder="请输入课程名" style="width: 200px;margin-right: 20px;" class="layui-input">
+            </div>
+            <button class="layui-btn layui-btn-sm" lay-event="queryCourse1" onclick="queryCourse1()">查询</button>
+            <table id="courseListTable" lay-filter="courseListFilter"></table>
+        </div>
+        <div class="layui-tab-item">
+            <div class="layui-input-inline">
+                <input type="text" name="queryCourse2" id="queryCourse2"  placeholder="请输入课程名" style="width: 200px;margin-right: 20px;" class="layui-input">
+            </div>
+            <button class="layui-btn layui-btn-sm" lay-event="queryCourse2" onclick="queryCourse2()">查询</button>
+            <table id="likedCourseTable" lay-filter="likedCourseFilter"></table>
+        </div>
+        <div class="layui-tab-item">
+            <div class="layui-input-inline">
+                <input type="text" name="queryCourse3" id="queryCourse3"  placeholder="请输入课程名" style="width: 200px;margin-right: 20px;" class="layui-input">
+            </div>
+            <button class="layui-btn layui-btn-sm" lay-event="queryCourse3" onclick="queryCourse3()">查询</button>
+            <table id="endCourseTable" lay-filter="endCourseFilter"></table>
+        </div>
+        <div class="layui-tab-item">
+            <div class="layui-input-inline">
+                <input type="text" name="queryCourse4" id="queryCourse4"  placeholder="请输入课程名" style="width: 200px;margin-right: 20px;" class="layui-input">
+            </div>
+            <button class="layui-btn layui-btn-sm" lay-event="queryCourse4" onclick="queryCourse4()">查询</button>
+            <table id="reviewCourseTable" lay-filter="reviewCourseFilter"></table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

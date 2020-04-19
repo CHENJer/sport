@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>飞羽健身管理系统登录</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}">
+    <link rel="stylesheet" th:href="@{/static/web/css/login/login.css}">
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script>
+        layui.use('form', function(){
+            var form = layui.form;
+            //监听提交
+            form.on('submit(formDemo)', function(data){
+                $.ajax({
+                    url:'/isLogin',
+                    method:'post',
+                    data:data.field,
+                    dataType:'JSON',
+                    success:function(res){
+                        console.log("res.data");
+                        console.log(res.data);
+                        if(res.data.code == 200){
+                            window.location.href = "/index";
+                        }else{
+                            layer.msg(res.data.msg, {icon: 5});
+                        }
+                    },
+                    error:function (data) {
+                        layer.msg(res.data.msg, {icon: 5});
+                    }
+                })
+                 
+                return false;
+            });
+        });
+    </script>
+</head>
+<body class="layui-layout-body">
+    <div class="layui-fluid">
+        <div class="layui-row">
+            <div style="text-align: center;line-height: 300px;height: 300px;">
+                <span style="color: white;font-weight:bolder;font-size: 40px;">
+                    飞羽健身系统登录页面
+                </span>
+            </div>
+        </div>
+        <div class="layui-row" style="verticle-align:middle;">
+            <div class="layui-col-md4 layui-col-md-offset4"  style="text-align: center">
+                <form class="layui-form" action="#">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label" style="color: white;font-weight:bolder;font-size: 20px;">账号：</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="userName" required  lay-verify="required" placeholder="请输入账号" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item" style="margin-top:40px;">
+                        <label class="layui-form-label" style="color: white;font-weight:bolder;font-size: 20px;">密码：</label>
+                        <div class="layui-input-block">
+                            <input type="password" name="passWord" required lay-verify="required" placeholder="请输入密码" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item" style="margin-top:40px;">
+                        <div class="layui-input-block">
+                            <button class="layui-btn layui-btn-lg layui-btn-radius" lay-submit lay-filter="formDemo">登录</button>
+                            <button type="reset" class="layui-btn layui-btn-lg layui-btn-radius layui-btn-primary">重置</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

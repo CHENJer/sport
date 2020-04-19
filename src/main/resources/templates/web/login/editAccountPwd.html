@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>飞羽健身管理系统</title>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}">
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script>
+        //JavaScript代码区域
+        layui.use(["element","jquery","layer","form"], function(){
+            var element = layui.element;
+            var layer = layui.layer;
+            window.outLogin = function () {
+                var userCode = $("#userCode").val();
+                $.ajax({
+                    url: '/outLogin',
+                    method: 'post',
+                    data: {userCode:userCode},
+                    dataType: 'JSON',
+                    success:function (data) {
+                        window.parent.location.href = "/loginPage";
+                    },error:function (data) {
+                        window.parent.location.href = "/index";
+                    }
+                })
+            }
+            //监听提交
+            var form = layui.form;
+            form.on('submit(accountForm)', function(data){
+                var userCode  = $("#userCode").val();
+                var updatePwd  = data.field.updatePwd;
+                var confirmPwd = data.field.confirmPwd;
+                if(updatePwd != confirmPwd){
+                    layer.msg('两次输入的密码不一致！', {icon: 5});
+                    return false;
+                }else{
+                    $.ajax({
+                        url:'/submitAccountPwd',
+                        type:'post',
+                        dataType:'json',
+                        data:data.field,
+                        success:function(data){
+                            if(data.data.code == '200'){
+                                layer.open({
+                                    content: data.data.msg
+                                    ,btn: ['确定']
+                                    ,yes: function(index, layero){
+                                        //按钮【按钮一】的回调
+                                        outLogin();
+                                    }
+                                    ,cancel: function(){
+                                        //右上角关闭回调
+                                        outLogin();
+                                        //return false 开启该代码可禁止点击该按钮关闭
+                                    }
+                                });
+
+                            }else{
+                                layer.msg(data.data.msg, {icon: 5});
+                            }
+                        },
+                        error:function () {
+                            layer.msg("密码修改失败")
+                        }
+                    })
+                }
+                return false;
+            });
+        });
+    </script>
+</head>
+<body class="layui-layout-body">
+<input type="hidden" id="userCode" name="userCode" th:value="${session.userCode}">
+<div class="layui-fluid">
+    <div class="layui-row">
+        <div style="text-align: center;line-height: 180px;height: 180px;">
+            <span style="font-weight:bolder;font-size: 20px;">
+               修改用户密码
+            </span>
+        </div>
+    </div>
+    <div class="layui-row" style="verticle-align:middle;">
+        <div class="layui-col-md4 layui-col-md-offset4"  style="text-align: center">
+            <form class="layui-form" action="#" id="accountSetFrom">
+                <input type="hidden"  name="id" class="layui-input" th:value="${account.id}">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">账号</label>
+                    <div class="layui-input-block">
+                        <input type="text"  name="username" disabled required lay-verify="required" class="layui-input" th:value="${account.userName}">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">原先密码：</label>
+                    <div class="layui-input-block">
+                        <input type="password" name="beforePwd" required lay-verify="required" placeholder="请输入原先的密码"  class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">更改密码：</label>
+                    <div class="layui-input-block">
+                        <input type="password" name="updatePwd" required lay-verify="required" placeholder="请输入更改后的密码"  class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">确认密码：</label>
+                    <div class="layui-input-block">
+                        <input type="password" name="confirmPwd" required lay-verify="required" placeholder="请再次输入更改后的密码"  class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-submit lay-filter="accountForm">立即提交</button>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+
+</html>

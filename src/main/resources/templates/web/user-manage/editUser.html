@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html  xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>编辑用户</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}">
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script>
+        //JavaScript代码区域
+        layui.use(["element","jquery","layer","form","upload","table"], function(){
+            var table = layui.table;
+            var layer = layui.layer;
+            var element = layui.element;
+            var form = layui.form;
+            var upload = layui.upload;
+            var jquery = layui.jquery;
+            var loadings;
+
+            //执行实例
+            var uploadInst = upload.render({
+                elem: '#uploadImg' //绑定元素
+                ,url: '/uploadFile' //上传接口
+                ,exts: 'jpg|png|jpeg'
+                ,before: function(){
+                    loadings=layer.load('加载中...', {
+                        shade: [0.3,'#fff'] //0.1透明度的白色背景
+                    });
+                }
+                ,done: function(res){
+                    if(res.code == 200){
+                        jquery("#teachPic").val("");
+                        jquery("#teachPicImg").attr("src","");
+                        jquery("#teachPic").val(res.data);
+                        jquery("#teachPicImg").attr("src",res.data);
+                        layer.msg("上传成功！",{icon:1});
+                    }else{
+                        layer.msg("上传失败！",{icon:5});
+                    }
+                    layer.close(loadings);
+                }
+                ,error: function(res){
+                    //请求异常回调
+                    layer.msg("上传失败",{icon:5});
+                    layer.close(loadings);
+                }
+            });
+            //监听提交
+            form.on('submit(formDemo)', function(data){
+                var age = data.field.age;
+                var tel = data.field.tel;
+                var type = $("#type").val();
+                if(Number(age)<Number(0)){
+                    layer.msg("年龄不能为负数",{icon: 5});
+                    return false;
+                }else if(Number(age)>Number(100)){
+                    layer.msg("年龄不能为大于100岁",{icon: 5});
+                    return false;
+                }
+                if(tel.length != 11){
+                    layer.msg("请输入11位电话号码",{icon: 5});
+                    return false;
+                }
+                layer.confirm('是否确定修改用户？', {
+                    btn: ['是', '否'] //可以无限个按钮
+                }, function(index, layero){
+                    $.ajax({
+                        url:'/user/editUser',
+                        method:'post',
+                        data:data.field,
+                        dataType:'JSON',
+                        success:function(res){
+                            if(res.data.code == 200){
+                                layer.msg(res.data.msg, {icon: 1});
+                                if(type == "0"){
+                                    window.parent.location.href = "/student/init";
+                                }else{
+                                    window.parent.location.href = "/teacher/init";
+                                }
+
+                            }else{
+                                layer.msg(res.data.msg, {icon: 5});
+                            }
+                        },
+                        error:function (data) {
+                            layer.msg(res.data.msg, {icon: 5});
+                        }
+                    })
+                }, function(index){
+
+                });
+                return false;
+            });
+
+        });
+    </script>
+</head>
+<body>
+<fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+    <legend>编辑用户</legend>
+</fieldset>
+<div class="layui-row" style="width:80%">
+    <form class="layui-form" action="#">
+        <input type="hidden" name="type" th:value="${user.type}">
+        <input type="hidden" name="id" th:value="${user.id}">
+        <div class="layui-form-item">
+            <label class="layui-form-label">姓名</label>
+            <div class="layui-input-block">
+                <input type="text" name="name" required  lay-verify="required" placeholder="请输入姓名"
+                       autocomplete="off" class="layui-input" th:value="${user.name}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">性别</label>
+            <div class="layui-input-block">
+                <input type="radio" name="sex" value="男" title="男" th:checked="${user.sex eq '男'} ? true : false">
+                <input type="radio" name="sex" value="女" title="女" th:checked="${user.sex eq '女'} ? true : false">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">年龄</label>
+            <div class="layui-input-block">
+                <input type="number" name="age" required  lay-verify="required" placeholder="请输入年龄"
+                       autocomplete="off" class="layui-input" th:value="${user.age}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">电话</label>
+            <div class="layui-input-block">
+                <input type="number" name="tel" required  lay-verify="required" placeholder="请输入电话"
+                       autocomplete="off" class="layui-input" th:value="${user.tel}">
+            </div>
+        </div>
+        <div th:if=" ${user.type} eq '1'">
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">教练头像</label>
+
+                <div class="layui-input-block">
+                    <button type="button" class="layui-btn" id="uploadImg">
+                        <i class="layui-icon">&#xe67c;</i>上传教练头像
+                    </button>
+                    <br/>
+                    <input type="hidden" name="teachPic" id="teachPic" th:value="${user.teachPic}">
+                    <img th:src="${user.teachPic}" id="teachPicImg" style="height: 150px;width: 150px;margin-bottom: 10px;margin-top: 10px;"/>
+
+                </div>
+            </div>
+
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">教练简介</label>
+                <div class="layui-input-block">
+                    <textarea name="teachDesc" placeholder="请输入教练简介" class="layui-textarea" th:text="${user.teachDesc}"></textarea>
+                </div>
+            </div>
+
+        </div>
+        <div class="layui-form-item" style="margin-top: 20px;">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+</html>

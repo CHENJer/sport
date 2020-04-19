@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>飞羽健身管理系统</title>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}">
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script>
+        var option = {
+            elem: '#courceTable',
+            height: 523,
+            url: '/cource/findAll', //数据接口
+            page: true, //开启分页
+            cols: [
+                [ //表头
+                    {field: 'typeName', title: '类型名称'},
+                    {field: 'typeCode', title: '类型code',sort: true },
+                    {field: 'comment', title: '备注说明', sort: true},
+                    {field: 'createTime', title: '创建时间',
+                        templet : "<div>{{layui.util.toDateString(d.ordertime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                        width: 200,
+                        sort: true},
+                    {field: 'right', title: '操作', toolbar: '#courceBar',width:150},
+
+                ]
+            ],
+            toolbar: '#courceAdd'
+        }
+
+        //JavaScript代码区域
+        layui.use(["element","jquery","layer","form","table"], function(){
+            var table = layui.table;
+            table.render(option);
+            /*表格头的*/
+            table.on('toolbar()',function (obj) {
+                var layEvent = obj.event;
+                if (layEvent=='addCource'){
+                    layer.open({
+                        title: '',
+                        type: 2,
+                        content: ['/cource/addTypeInit?type=0', 'no' ],
+                        area: ['600px', '350px']
+
+                    });
+                }
+            });
+            /*表格数据的*/
+            table.on('tool()',function (obj) {
+                var layEvent = obj.event;
+                if (layEvent=='editCource'){
+                    layer.open({
+                        title: '',
+                        type: 2,
+                        content: ['/cource/editTypeInit?id='+obj.data.id, 'no' ],
+                        area: ['600px', '430px']
+
+                    });
+                }else if (layEvent=='delCource'){
+                    layer.confirm('是否删除该条记录？', {
+                        btn: ['是', '否'] //可以无限个按钮
+                    }, function(index, layero){
+                        $.ajax({
+                            url:'/cource/editType',
+                            method:'post',
+                            data:{
+                                id: obj.data.id,
+                                isDeleted: "1"
+                            },
+                            dataType:'JSON',
+                            success:function(res){
+                                if(res.data.code == 200){
+                                    layer.msg(res.data.msg, {icon: 1});
+                                    table.render(option);
+                                }else{
+                                    layer.msg(res.data.msg, {icon: 5});
+                                }
+                            },
+                            error:function (data) {
+                                layer.msg(res.data.msg, {icon: 5});
+                            }
+                        })
+                    }, function(index){
+
+                    });
+                }
+            })
+            window.querycource = function () {
+                var queryName = $("#queryName").val();
+                var option2 = {
+                    elem: '#courceTable',
+                    height: 523,
+                    url: '/cource/findAll?typeName='+queryName, //数据接口
+                    page: true, //开启分页
+                    cols: [
+                        [ //表头
+                            {field: 'typeName', title: '类型名称'},
+                            {field: 'typeCode', title: '类型code',sort: true },
+                            {field: 'comment', title: '备注说明', sort: true},
+                            {field: 'createTime', title: '创建时间',
+                                templet : "<div>{{layui.util.toDateString(d.ordertime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                                width: 200,
+                                sort: true},
+                            {field: 'right', title: '操作', toolbar: '#courceBar',width:150},
+
+                        ]
+                    ],
+                    toolbar: '#courceAdd'
+                }
+                table.render(option2);
+            }
+        });
+    </script>
+    <script type="text/html" id="courceAdd">
+        <div class="layui-btn-container">
+            <button class="layui-btn layui-btn-sm" lay-event="addCource">添加</button>
+        </div>
+    </script>
+    <script type="text/html" id="courceBar">
+        <div class="layui-btn-container">
+            <button class="layui-btn layui-btn-xs" lay-event="editCource">编辑</button>
+            <button class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delCource">删除</button>
+        </div>
+    </script>
+
+</head>
+<body>
+    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">
+        <legend>分类管理</legend>
+    </fieldset>
+    <div class="layui-row">
+        <div class="layui-input-inline">
+            <input type="text" name="queryName" id="queryName"  placeholder="请输入类型名称" style="width: 200px;margin-right: 20px;" class="layui-input">
+        </div>
+        <button class="layui-btn layui-btn-sm" lay-event="querycource" onclick="querycource()">查询</button>
+        <table id="courceTable" lay-filter="courceFilter"></table>
+    </div>
+</body>
+</html>

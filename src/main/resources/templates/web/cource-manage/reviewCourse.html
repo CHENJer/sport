@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html  xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>审核请假</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}">
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script>
+        //JavaScript代码区域
+        layui.use(["element","jquery","layer","form","table"], function(){
+            var table = layui.table;
+            var layer = layui.layer;
+            var element = layui.element;
+            var form = layui.form;
+
+            //监听提交
+            form.on('submit(formDemo)', function(data){
+                $.ajax({
+                    url:'/cource/reviewCourseMainStatus',
+                    method:'post',
+                    data:data.field,
+                    dataType:'JSON',
+                    success:function(res){
+                        if(res.data.code == 200){
+                            layer.msg(res.data.msg, {icon: 1});
+                            window.parent.location.href = "/cource/courseManageInit";
+                        }else{
+                            layer.msg(res.data.msg, {icon: 5});
+                        }
+                    },
+                    error:function (data) {
+                        layer.msg(res.data.msg, {icon: 5});
+                    }
+                })
+                return false;
+            });
+
+
+        });
+    </script>
+</head>
+<body>
+<fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+    <legend>审核申请下架课程</legend>
+</fieldset>
+<div class="layui-row" style="width:80%">
+    <form class="layui-form" action="#">
+        <input type="hidden" name="id" th:value="${courseMain.id}">
+        <div class="layui-form-item">
+            <label class="layui-form-label">课程名</label>
+            <div class="layui-input-block">
+                <input type="text" disabled
+                       class="layui-input" th:value="${courseMain.courseName}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">教练名字</label>
+            <div class="layui-input-block">
+                <input type="text" disabled
+                       class="layui-input" th:value="${courseMain.userName}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">课程描述</label>
+            <div class="layui-input-block">
+                <textarea disabled class="layui-textarea" th:text="${courseMain.courseDesc}"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">是否同意</label>
+            <div class="layui-input-block">
+                <input type="radio" name="isApplyEnd" value="1" title="同意" checked>
+                <input type="radio" name="isApplyEnd" value="0" title="不同意">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+</html>

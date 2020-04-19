@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>飞羽健身管理系统</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}">
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script>
+        //JavaScript代码区域
+        layui.use(["element","jquery","laydate","layer","form","table"], function(){
+            var table = layui.table;
+            var layer = layui.layer;
+            var element = layui.element;
+            var laydate = layui.laydate;
+
+            var start = laydate.render({ //投票开始
+                elem: '#startTime',
+                type: 'month',
+                done:function(value,date){
+                    endMax = end.config.max;
+                    end.config.min = date;
+                    end.config.min.month = date.month -1;
+                }
+            });
+            var end = laydate.render({ //投票结束
+                elem: '#endTime',
+                type: 'month',
+                done:function(value,date){
+                    if($.trim(value) == ''){
+                        var curDate = new Date();
+                        date = {'date': curDate.getDate(), 'month': curDate.getMonth()+1, 'year': curDate.getFullYear()};
+                    }
+                    start.config.max = date;
+                    start.config.max.month = date.month -1;
+                }
+            });
+            var start2 = laydate.render({ //投票开始
+                elem: '#startTime2',
+                type: 'month',
+                done:function(value,date){
+                    endMax = end.config.max;
+                    end.config.min = date;
+                    end.config.min.month = date.month -1;
+                }
+            });
+            var end2 = laydate.render({ //投票结束
+                elem: '#endTime2',
+                type: 'month',
+                done:function(value,date){
+                    if($.trim(value) == ''){
+                        var curDate = new Date();
+                        date = {'date': curDate.getDate(), 'month': curDate.getMonth()+1, 'year': curDate.getFullYear()};
+                    }
+                    start.config.max = date;
+                    start.config.max.month = date.month -1;
+                }
+            });
+            //一些事件监听
+            element.on('tab(myTab)', function(data){
+                if(data.index == 0){
+
+                }else if(data.index == 1){
+
+                }
+            });
+
+        });
+    </script>
+</head>
+<body>
+<fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">
+    <legend>盈利统计</legend>
+</fieldset>
+<div class="layui-tab layui-tab-brief" lay-filter="myTab">
+    <ul class="layui-tab-title">
+        <li class="layui-this" lay-id="accountId">收入</li>
+        <li lay-id="roleId">支出</li>
+    </ul>
+    <div class="layui-tab-content">
+        <!--账号设置-->
+        <div class="layui-tab-item layui-show">
+            <div class="layui-input-inline">
+                <input type="text" name="startTime" lay-verify="required" id="startTime" placeholder="开始时间" autocomplete="off" readonly="readonly" class="layui-input">
+            </div>
+            ——
+            <div class="layui-input-inline" style="margin-right: 20px;">
+                <input type="text" name="endTime" lay-verify="required" id="endTime" placeholder="结束时间" autocomplete="off" readonly="readonly" class="layui-input" >
+            </div>
+            <button class="layui-btn layui-btn-sm" lay-event="queryIncome" onclick="queryIncome()">查询</button>
+            <center>
+                <div id="main" style="width: 600px;height:400px;margin-top: 30px"></div>
+            </center>
+        </div>
+        <div class="layui-tab-item">
+            <div class="layui-input-inline">
+                <input type="text" name="startTime2" lay-verify="required" id="startTime2" placeholder="开始时间" autocomplete="off" readonly="readonly" class="layui-input">
+            </div>
+            ——
+            <div class="layui-input-inline" style="margin-right: 20px;">
+                <input type="text" name="endTime2" lay-verify="required" id="endTime2" placeholder="结束时间" autocomplete="off" readonly="readonly" class="layui-input" >
+            </div>
+            <button class="layui-btn layui-btn-sm" lay-event="queryLeave" onclick="querySpending()">查询</button>
+            <center>
+                <div id="main2" style="width: 600px;height:400px;margin-top: 30px"></div>
+            </center>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.bootcss.com/echarts/4.6.0/echarts.min.js"></script>
+<script type="text/javascript">
+    function getarr(str){return str.split(',');}
+    // 基于准备好的dom，初始化echarts实例
+    function incomeFun(data) {
+        var myChart = echarts.init(document.getElementById('main'));
+        var month = getarr(data.month);
+        var sum = getarr(data.sum);
+        // 指定图表的配置项和数据
+        var option = {
+            title: {
+                text: $("#startTime").val()+'到'+$("#endTime").val()+'的课程收入'
+            },
+            tooltip: {},
+            legend: {
+                data:['课程收入金额']
+            },
+            xAxis: {
+                data: month
+            },
+            yAxis: {},
+            series: [{
+                name: '金额',
+                type: 'bar',
+                data: sum
+            }]
+        };
+        console.log(option)
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+    }
+    function queryIncome(){
+        var startTime = $("#startTime").val();
+        var endTime = $("#endTime").val();
+        if(startTime == ''|| startTime == null || endTime == '' || endTime ==null){
+            alert("请选择时间范围！");
+            return false;
+        }
+        $.ajax({
+            url:'/capital/queryIncome',
+            method:'post',
+            data:{
+                "startTime": $("#startTime").val(),
+                "endTime": $("#endTime").val()
+            },
+            dataType:'JSON',
+            success:function(res){
+                if(res.code == 200){
+                    incomeFun(res.data);
+                }else{
+                    layer.msg(res.msg, {icon: 5});
+                }
+            },
+            error:function (data) {
+                layer.msg(data.data.msg, {icon: 5});
+            }
+        })
+
+
+    }
+    function spendingFun(data) {
+        var myChart = echarts.init(document.getElementById('main2'));
+        var month2 = getarr(data.month);
+        var sum2 = getarr(data.sum);
+        // 指定图表的配置项和数据
+        var option2 = {
+            title: {
+                text: $("#startTime2").val()+'到'+$("#endTime2").val()+'的薪资支出'
+            },
+            tooltip: {},
+            legend: {
+                data:['课程收入金额']
+            },
+            xAxis: {
+                data: month2
+            },
+            yAxis: {},
+            series: [{
+                name: '金额',
+                type: 'bar',
+                data: sum2
+            }]
+        };
+        console.log(option2)
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option2);
+    }
+    function querySpending(){
+        var startTime2 = $("#startTime2").val();
+        var endTime2 = $("#endTime2").val();
+        if(startTime2 == ''|| startTime2 == null || endTime2 == '' || endTime2 ==null){
+            alert("请选择时间范围！");
+            return false;
+        }
+        $.ajax({
+            url:'/capital/querySpending',
+            method:'post',
+            data:{
+                "startTime": $("#startTime2").val(),
+                "endTime": $("#endTime2").val()
+            },
+            dataType:'JSON',
+            success:function(res){
+                if(res.code == 200){
+                    spendingFun(res.data);
+                }else{
+                    layer.msg(res.msg, {icon: 5});
+                }
+            },
+            error:function (data) {
+                layer.msg(data.data.msg, {icon: 5});
+            }
+        })
+
+    }
+</script>
+</body>
+</html>

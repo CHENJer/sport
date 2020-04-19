@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>飞羽健身管理系统</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}">
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script>
+        var option1 = {
+            elem: '#accountTable',
+            id:'accountId',
+            skin: 'line',
+            height: 523,
+            url: '/account/findAll', //数据接口
+            page: true, //开启分页
+            limit: 10 ,
+            cols: [
+                [ //表头
+                    {field: 'userName', title: '账号'},
+                    {field: 'password', title: '密码' },
+                    {field: 'status', title: '账号状态', templet: getStatu,sort: true},
+                    {field: 'roleName', title: '账号角色', width: 135, sort: true},
+                    {field: 'createTime', title: '账号创建时间',
+                        templet : "<div>{{layui.util.toDateString(d.ordertime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                        width: 200,
+                        sort: true},
+                    {field: 'name', title: '用户名'},
+                    {field: 'sex', title: '性别',  sort: true},
+                    {field: 'age', title: '年龄',  sort: true},
+                    {field: 'right', title: '操作', toolbar: '#accountBar',width:150},
+
+                ]
+            ],
+            toolbar: '#accountAdd'
+        };
+        var option2 = {
+            elem: '#roleTable',
+            id:'roleId',
+            skin: 'line',
+            height: 523,
+            url: '/role/findAll', //数据接口
+            page: true, //开启分页
+            limit: 10 ,
+            cols: [
+                [ //表头
+                    {field: 'roleName', title: '角色名'},
+                    {field: 'roleCode', title: '角色编码' },
+                    {field: 'comment', title: '说明'},
+                    {field: 'right', title: '操作', toolbar: '#roleBar',width:150},
+
+                ]
+            ],
+            toolbar: '#roleAdd'
+        };
+        //自定义“状态”列
+        function getStatu(data) {
+            var status = data.status;
+            var btns = "";
+            if (status == "0") {
+                return "正常";
+            }
+            if (status == "1") {
+                btns += '<a class="" style="color:#ed2a4a">已冻结</a>';
+            }
+            return btns;
+        }
+
+        //JavaScript代码区域
+        layui.use(["element","jquery","layer","form","table"], function(){
+            var table = layui.table;
+            var layer = layui.layer;
+            var element = layui.element;
+            table.render(option1);
+            //一些事件监听
+            element.on('tab(myTab)', function(data){
+                if(data.index == 0){
+                    table.render(option1);
+                }else if(data.index == 1){
+                    table.render(option2);
+                }
+            });
+            /*表格头的*/
+            table.on('toolbar()',function (obj) {
+                var layEvent = obj.event;
+                if (layEvent=='addAccount'){
+                    layer.open({
+                        title: '',
+                        type: 2,
+                        content: ['/account/addInit', 'no' ],
+                        area: ['600px', '500px']
+
+                    });
+
+                } else if (layEvent=='addRole'){
+                    layer.open({
+                        title: '',
+                        type: 2,
+                        content: ['/role/addInit', 'no' ],
+                        area: ['600px', '300px']
+
+                    });
+                }
+
+            });
+            /*表格数据的*/
+            table.on('tool()',function (obj) {
+                var layEvent = obj.event;
+                if (layEvent=='editAccount'){
+                    layer.open({
+                        title: '',
+                        type: 2,
+                        content: ['/account/editInit?id='+obj.data.accountId, 'no' ],
+                        area: ['600px', '430px']
+
+                    });
+                }else if (layEvent=='delAccount'){
+                    layer.confirm('是否删除该条记录？', {
+                        btn: ['是', '否'] //可以无限个按钮
+                    }, function(index, layero){
+                        $.ajax({
+                            url:'/account/editAccount',
+                            method:'post',
+                            data:{
+                                id: obj.data.accountId,
+                                isDeleted: "1"
+                            },
+                            dataType:'JSON',
+                            success:function(res){
+                                if(res.data.code == 200){
+                                    layer.msg(res.data.msg, {icon: 1});
+                                    table.render(option1);
+                                }else{
+                                    layer.msg(res.data.msg, {icon: 5});
+                                }
+                            },
+                            error:function (data) {
+                                layer.msg(res.data.msg, {icon: 5});
+                            }
+                        })
+                    }, function(index){
+
+                    });
+                }
+                if (layEvent=='editRole'){
+                    layer.open({
+                        title: '',
+                        type: 2,
+                        content: ['/role/editInit?id='+obj.data.id, 'no' ],
+                        area: ['600px', '300px']
+
+                    });
+                }else if (layEvent=='delRole'){
+                    layer.confirm('是否删除该条记录？', {
+                        btn: ['是', '否'] //可以无限个按钮
+                    }, function(index, layero){
+                        $.ajax({
+                            url:'/role/editRole',
+                            method:'post',
+                            data:{
+                                id: obj.data.id,
+                                isDeleted: "1"
+                            },
+                            dataType:'JSON',
+                            success:function(res){
+                                if(res.data.code == 200){
+                                    layer.msg(res.data.msg, {icon: 1});
+                                    table.render(option2);
+                                }else{
+                                    layer.msg(res.data.msg, {icon: 5});
+                                }
+                            },
+                            error:function (data) {
+                                layer.msg(res.data.msg, {icon: 5});
+                            }
+                        })
+                    }, function(index){
+
+                    });
+
+                }
+            })
+            window.queryAccount = function () {
+                var queryAccount = $("#queryAccount").val();
+                var option3 = {
+                    elem: '#accountTable',
+                    id:'accountId',
+                    skin: 'line',
+                    height: 523,
+                    url: '/account/findAll?userName='+queryAccount, //数据接口
+                    page: true, //开启分页
+                    limit: 10 ,
+                    cols: [
+                        [ //表头
+                            {field: 'userName', title: '账号'},
+                            {field: 'password', title: '密码' },
+                            {field: 'status', title: '账号状态', templet: getStatu,sort: true},
+                            {field: 'roleName', title: '账号角色', width: 135, sort: true},
+                            {field: 'createTime', title: '账号创建时间',
+                                templet : "<div>{{layui.util.toDateString(d.ordertime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                                width: 200,
+                                sort: true},
+                            {field: 'name', title: '用户名'},
+                            {field: 'sex', title: '性别',  sort: true},
+                            {field: 'age', title: '年龄',  sort: true},
+                            {field: 'right', title: '操作', toolbar: '#accountBar',width:150},
+
+                        ]
+                    ],
+                    toolbar: '#accountAdd'
+                }
+                table.render(option3);
+            }
+            window.queryRole = function () {
+                var queryRole = $("#queryRole").val();
+                var option4 = {
+                    elem: '#roleTable',
+                    id:'roleId',
+                    skin: 'line',
+                    height: 523,
+                    url: '/role/findAll?roleName='+queryRole, //数据接口
+                    page: true, //开启分页
+                    limit: 10 ,
+                    cols: [
+                        [ //表头
+                            {field: 'roleName', title: '角色名'},
+                            {field: 'roleCode', title: '角色编码' },
+                            {field: 'comment', title: '说明'},
+                            {field: 'right', title: '操作', toolbar: '#roleBar',width:150},
+
+                        ]
+                    ],
+                    toolbar: '#roleAdd'
+                }
+                table.render(option4);
+            }
+        });
+    </script>
+
+    <script type="text/html" id="accountAdd">
+        <div class="layui-btn-container">
+            <button class="layui-btn layui-btn-sm" lay-event="addAccount">添加</button>
+        </div>
+    </script>
+    <script type="text/html" id="roleAdd">
+        <div class="layui-btn-container">
+            <button class="layui-btn layui-btn-sm" lay-event="addRole">添加</button>
+        </div>
+    </script>
+    <script type="text/html" id="accountBar">
+        <div class="layui-btn-container">
+            <button class="layui-btn layui-btn-xs" lay-event="editAccount">编辑</button>
+            <button class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delAccount">删除</button>
+        </div>
+    </script>
+    <script type="text/html" id="roleBar">
+        <div class="layui-btn-container">
+            <button class="layui-btn layui-btn-xs" lay-event="editRole">编辑</button>
+            <button class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delRole" >删除</button>
+        </div>
+    </script>
+</head>
+<body>
+<fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">
+    <legend>账号管理</legend>
+</fieldset>
+<div class="layui-tab layui-tab-brief" lay-filter="myTab">
+    <ul class="layui-tab-title">
+        <li class="layui-this" lay-id="accountId">账号设置</li>
+        <li lay-id="roleId">权限管理</li>
+    </ul>
+    <div class="layui-tab-content">
+        <!--账号设置-->
+        <div class="layui-tab-item layui-show">
+            <div class="layui-input-inline">
+                <input type="text" name="queryAccount" id="queryAccount"  placeholder="请输入账号名" style="width: 200px;margin-right: 20px;" class="layui-input">
+            </div>
+            <button class="layui-btn layui-btn-sm" lay-event="queryStudent" onclick="queryAccount()">查询</button>
+            <table id="accountTable" lay-filter="accountFilter"></table>
+        </div>
+        <div class="layui-tab-item">
+            <div class="layui-input-inline">
+                <input type="text" name="queryRole" id="queryRole"  placeholder="请输入角色名" style="width: 200px;margin-right: 20px;" class="layui-input">
+            </div>
+            <button class="layui-btn layui-btn-sm" lay-event="queryStudent" onclick="queryRole()">查询</button>
+            <table id="roleTable" lay-filter="roleFilter"></table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

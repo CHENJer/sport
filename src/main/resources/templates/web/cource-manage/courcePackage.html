@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>飞羽健身管理系统</title>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}">
+    <script th:src="@{/static/layui/layui.js}"></script>
+
+</head>
+<body>
+    <div class="layui-row">
+        <input type="hidden" id="courseCode" th:value="${courseCode}">
+        <table id="packageTable" lay-filter="packageFilter"></table>
+    </div>
+</body>
+<script>
+    var option = {
+        elem: '#packageTable',
+        height: 365,
+        url: '/cource/findPackage?courseCode='+$("#courseCode").val(), //数据接口
+        page: true, //开启分页
+        cols: [
+            [ //表头
+                {field: 'packageNum', title: '序号',sort: true},
+                {field: 'packageName', title: '课程名称' },
+                {field: 'startTime', title: '开始时间',
+                    templet : "<div>{{layui.util.toDateString(d.ordertime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                    width: 200,
+                    sort: true},
+                {field: 'endTime', title: '结束时间',
+                    templet : "<div>{{layui.util.toDateString(d.ordertime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                    width: 200,
+                    sort: true},
+                {field: 'status', title: '状态',templet:getStatu },
+            ]
+        ],
+    }
+    //自定义“状态”列 0未解锁，1正在进行已解锁，2已完成
+    function getStatu(data) {
+        var status = data.status;
+        var btns = "";
+        if (status == "0") {
+            return "未解锁";
+        }
+        if (status == "1") {
+            btns += '<a class="" style="color:##2eb85c">进行中</a>';
+        }
+        if (status == "1") {
+            btns += '<a class="" style="color:#696969">已完成</a>';
+        }
+        return btns;
+    }
+    //JavaScript代码区域
+    layui.use(["element","jquery","layer","form","table"], function(){
+        var table = layui.table;
+        table.render(option);
+        /*表格头的*/
+        table.on('toolbar()',function (obj) {
+            var layEvent = obj.event;
+        });
+        /*表格数据的*/
+        table.on('tool()',function (obj) {
+            var layEvent = obj.event;
+        })
+    });
+</script>
+</html>

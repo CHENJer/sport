@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html  xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>编辑</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}">
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script>
+        //JavaScript代码区域
+        function addMoney(){
+            var basicMoney = $("#basicMoney").val();
+            var commission = $("#commission").val();
+            var leaveDeduct = $("#leaveDeduct").val();
+            var realMoney= 0.00;
+            if(basicMoney != null && basicMoney != ''){
+                realMoney = Number(realMoney)+Number(basicMoney);
+            }
+            if(commission != null && commission != ''){
+                realMoney = Number(realMoney)+Number(commission);
+            }
+            if(leaveDeduct != null && leaveDeduct != ''){
+                realMoney = Number(realMoney) - Number(leaveDeduct);
+            }
+            $("#realMoney").val(Number(realMoney));
+        }
+        layui.use(["element","jquery","layer","laydate","form","upload","table"], function(){
+            var table = layui.table;
+            var layer = layui.layer;
+            var element = layui.element;
+            var form = layui.form;
+            var upload = layui.upload;
+            var jquery = layui.jquery;
+            var laydate = layui.laydate;
+
+            //执行一个laydate实例
+            laydate.render({
+                elem: '#salaryTime' //指定元素
+                ,type: 'month'
+            });
+            //监听提交
+            form.on('submit(formDemo)', function(data){
+                layer.confirm('是否确定修改工资记录？', {
+                    btn: ['是', '否'] //可以无限个按钮
+                }, function(index, layero){
+                    $.ajax({
+                        url:'/capital/editSalaryManage',
+                        method:'post',
+                        data:data.field,
+                        dataType:'JSON',
+                        success:function(res){
+                            if(res.data.code == 200){
+                                layer.msg(res.data.msg, {icon: 1});
+                                window.parent.location.href = "/capital/salaryManageInit";
+                            }else{
+                                layer.msg(res.data.msg, {icon: 5});
+                            }
+                        },
+                        error:function (data) {
+                            layer.msg(res.data.msg, {icon: 5});
+                        }
+                    })
+                }, function(index){
+
+                });
+                return false;
+            });
+
+        });
+    </script>
+</head>
+<body>
+    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+        <legend>添加页面</legend>
+    </fieldset>
+    <div class="layui-row" style="width:80%">
+        <form class="layui-form" action="#">
+            <input type="hidden" name="id" th:value="${salary.id}">
+            <div class="layui-form-item">
+                <label class="layui-form-label">选择教练</label>
+                <div class="layui-input-block">
+                    <select name="userCode" lay-verify="required">
+                        <option th:each="teacher,stat:${teacher}" th:value="${teacher.userCode}" th:text="${teacher.name}" th:selected="${teacher.userCode == salary.userCode ? true:false}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">工资时间</label>
+                <div class="layui-input-block">
+                    <input type="text" class="layui-input" name="salaryTime" id="salaryTime" th:value="${#dates.format(salary.salaryTime, 'yyyy-MM')}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">基本工资</label>
+                <div class="layui-input-block">
+                    <input type="number" name="basicMoney" id="basicMoney" required  lay-verify="required" placeholder="请输入基本工资"
+                           autocomplete="off" class="layui-input" th:value="${salary.basicMoney}" oninput="addMoney()">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">绩效提成</label>
+                <div class="layui-input-block">
+                    <input type="number" name="commission" id="commission" required  lay-verify="required"
+                           placeholder="请输入绩效提成" oninput="addMoney()"
+                           autocomplete="off" class="layui-input" th:value="${salary.commission}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">请假扣除</label>
+                <div class="layui-input-block">
+                    <input type="number" name="leaveDeduct" id="leaveDeduct" required  lay-verify="required" oninput="addMoney()"
+                           placeholder="请输入请假扣除金额" autocomplete="off" class="layui-input" th:value="${salary.leaveDeduct}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">实发工资</label>
+                <div class="layui-input-block">
+                    <input type="number" name="realMoney" id="realMoney" lay-verify="required"
+                           disabled class="layui-input" th:value="${salary.realMoney}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">备注</label>
+                <div class="layui-input-block">
+                    <textarea name="comment" placeholder="请输入备注"
+                              class="layui-textarea" th:text="${salary.comment}"></textarea>
+                </div>
+            </div>
+
+            <div class="layui-form-item" style="margin-top: 20px;">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

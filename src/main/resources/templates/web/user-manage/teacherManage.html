@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>飞羽健身管理系统</title>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}">
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script>
+        //JavaScript代码区域
+        var option1 = {
+            elem: '#teacherTable',
+            height: 523,
+            url: '/teacher/findAll', //数据接口
+            page: true, //开启分页
+            cols: [
+                [ //表头
+                    {field: 'name', title: '姓名'},
+                    {field: 'sex', title: '性别',sort: true },
+                    {field: 'age', title: '年龄', sort: true},
+                    {field: 'tel', title: '电话'},
+                    {field: 'teachDesc', title: '教练简介'},
+                    {field: 'createTime', title: '登记时间',
+                        templet : "<div>{{layui.util.toDateString(d.ordertime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                        width: 200,
+                        sort: true},
+                    {field: 'right', title: '操作', toolbar: '#teacherBar',width:150},
+
+                ]
+            ],
+            toolbar: '#teacherAdd'
+        }
+        layui.use(["element","jquery","layer","form","table"], function(){
+            var table = layui.table;
+            table.render(option1);
+            /*表格头的*/
+            table.on('toolbar()',function (obj) {
+                var layEvent = obj.event;
+                if (layEvent=='addTeacher'){
+                    layer.open({
+                        title: '',
+                        type: 2,
+                        content: ['/user/addInit?type=1', 'no' ],
+                        area: ['600px', '700px']
+                    });
+
+                }
+            });
+            /*表格数据的*/
+            table.on('tool()',function (obj) {
+                var layEvent = obj.event;
+                if (layEvent=='editTeacher'){
+                    layer.open({
+                        title: '',
+                        type: 2,
+                        content: ['/user/editInit?type=1&id='+obj.data.id, 'no' ],
+                        area: ['600px', '680px']
+
+                    });
+                }else if (layEvent=='delTeacher'){
+                    layer.confirm('是否删除该条记录？', {
+                        btn: ['是', '否'] //可以无限个按钮
+                    }, function(index, layero){
+                        $.ajax({
+                            url:'/user/editUser',
+                            method:'post',
+                            data:{
+                                id: obj.data.id,
+                                isDeleted: "1"
+                            },
+                            dataType:'JSON',
+                            success:function(res){
+                                if(res.data.code == 200){
+                                    layer.msg(res.data.msg, {icon: 1});
+                                    table.render(option);
+                                }else{
+                                    layer.msg(res.data.msg, {icon: 5});
+                                }
+                            },
+                            error:function (data) {
+                                layer.msg(res.data.msg, {icon: 5});
+                            }
+                        })
+                    }, function(index){
+
+                    });
+                }
+            })
+            window.queryTeacher = function () {
+                var queryName = $("#queryName").val();
+                var option2 = {
+                    elem: '#teacherTable',
+                    height: 523,
+                    url: '/teacher/findAll?name='+queryName, //数据接口
+                    page: true, //开启分页
+                    cols: [
+                        [ //表头
+                            {field: 'name', title: '姓名'},
+                            {field: 'sex', title: '性别',sort: true },
+                            {field: 'age', title: '年龄', sort: true},
+                            {field: 'tel', title: '电话'},
+                            {field: 'teachDesc', title: '教练简介'},
+                            {field: 'createTime', title: '登记时间',
+                                templet : "<div>{{layui.util.toDateString(d.ordertime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                                width: 200,
+                                sort: true},
+                            {field: 'right', title: '操作', toolbar: '#teacherBar',width:150},
+
+                        ]
+                    ],
+                    toolbar: '#teacherAdd'
+                }
+                table.render(option2);
+            }
+        });
+    </script>
+    <script type="text/html" id="teacherAdd">
+        <div class="layui-btn-container">
+            <button class="layui-btn layui-btn-sm" lay-event="addTeacher">添加</button>
+        </div>
+    </script>
+    <script type="text/html" id="teacherBar">
+        <div class="layui-btn-container">
+            <button class="layui-btn layui-btn-xs" lay-event="editTeacher">编辑</button>
+            <button class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delTeacher">删除</button>
+        </div>
+    </script>
+</head>
+<body>
+    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">
+        <legend>教练管理</legend>
+    </fieldset>
+    <div class="layui-row">
+        <div class="layui-input-inline">
+            <input type="text" name="queryName" id="queryName"  placeholder="请输入姓名" style="width: 200px;margin-right: 20px;" class="layui-input">
+        </div>
+        <button class="layui-btn layui-btn-sm" lay-event="queryTeacher" onclick="queryTeacher()">查询</button>
+        <table id="teacherTable" lay-filter="teacherFilter"></table>
+    </div>
+</body>
+</html>

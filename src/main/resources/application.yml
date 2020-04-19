@@ -1,0 +1,65 @@
+server:
+  port: 443
+  ssl:
+    key-store: classpath:ssl.pfx
+    key-store-password: 9tPUmTLe
+    keyAlias: alias
+    keyStoreType: PKCS12
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+spring:
+  profiles:
+    active: dev
+  datasource:
+    name: mysql
+    url: jdbc:mysql://47.106.125.218:3306/sport?characterEncoding=utf-8
+    username: sport
+    password: 123456
+    type: com.alibaba.druid.pool.DruidDataSource
+    filters: stat
+    maxActive: 20
+    initialSize: 1
+    maxWait: 60000
+    minIdle: 1
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: select count(1) from 'table'
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: false
+    maxOpenPreparedStatements: -1
+  #thymelea模板配置
+  thymeleaf:
+    suffix: .html
+    mode: HTML5
+    encoding: UTF-8
+    cache: false
+  http:
+    servlet:
+      multipart:
+        max-file-size: 400MB
+  mvc:
+    static-path-pattern: /static/**
+  ftp:
+    host: 47.106.125.218
+    port: 21
+    username: crmeb.xiaolifosufhi.vip
+    password: GRmAd84aKr24tpcP
+    basePath: /www/wwwroot/crmeb.xiaolifosufhi.vip
+    httpPath: http://47.106.125.218
+    url: http://js.xiaoliaofushi.vip/upload_file/
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: cn.com.itcast.sport.entry
+resources:
+  logdir: logs/
+  appname: sport
+  basepackage: cn.com.itcast.sport
+  chain:
+    strategy:
+      content:
+        enabled: true
+        paths: /**

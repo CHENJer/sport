@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>飞羽健身管理系统</title>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}">
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script>
+        var option = {
+            elem: '#leaveTable',
+            height: 523,
+            url: '/leave/findAll?status=0', //数据接口
+            page: true, //开启分页
+            cols: [
+                [ //表头
+                    {field: 'courseName', title: '课程名'},
+                    {field: 'packageName', title: '小节名',sort: true },
+                    {field: 'packageAdjustStartTime', title: '调整开始时间',
+                        templet : "<div>{{layui.util.toDateString(d.packageAdjustStartTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                        width: 200,
+                        sort: true},
+                    {field: 'packageAdjustEndTime', title: '调整结束时间',
+                        templet : "<div>{{layui.util.toDateString(d.packageAdjustEndTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                        width: 200,
+                        sort: true},
+                    {field: 'packageBeforeStartTime', title: '原先开始时间',
+                        templet : "<div>{{layui.util.toDateString(d.packageBeforeStartTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                        width: 200,
+                        sort: true},
+                    {field: 'packageBeforeEndTime', title: '原先结束时间',
+                        templet : "<div>{{layui.util.toDateString(d.packageBeforeEndTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                        width: 200,
+                        sort: true},
+                    {field: 'startUserName', title: '教练名称'},
+                    {field: 'right', title: '操作', toolbar: '#leaveBar',width:150},
+
+                ]
+            ],
+            toolbar: '#leaveAdd'
+        }
+
+        //JavaScript代码区域
+        layui.use(["element","jquery","layer","form","table"], function(){
+            var table = layui.table;
+            table.render(option);
+            /*表格头的*/
+            table.on('toolbar()',function (obj) {
+
+            });
+            /*表格数据的*/
+            table.on('tool()',function (obj) {
+                var layEvent = obj.event;
+                if (layEvent=='reviewLeave'){
+                    layer.open({
+                        title: '',
+                        type: 2,
+                        content: ['/leave/reviewLeave?id='+obj.data.id, 'no' ],
+                        area: ['520px', '460px']
+
+                    });
+                }
+            })
+            window.queryLeave = function () {
+                var queryName = $("#queryName").val();
+                var option2 = {
+                    elem: '#leaveTable',
+                    height: 523,
+                    url: '/leave/findAll?status=0&startUserName='+queryName, //数据接口
+                    page: true, //开启分页
+                    cols: [
+                        [ //表头
+                            {field: 'courseName', title: '课程名'},
+                            {field: 'packageName', title: '小节名',sort: true },
+                            {field: 'packageAdjustStartTime', title: '调整开始时间',
+                                templet : "<div>{{layui.util.toDateString(d.packageAdjustStartTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                                width: 200,
+                                sort: true},
+                            {field: 'packageAdjustEndTime', title: '调整结束时间',
+                                templet : "<div>{{layui.util.toDateString(d.packageAdjustEndTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                                width: 200,
+                                sort: true},
+                            {field: 'packageBeforeStartTime', title: '原先开始时间',
+                                templet : "<div>{{layui.util.toDateString(d.packageBeforeStartTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                                width: 200,
+                                sort: true},
+                            {field: 'packageBeforeEndTime', title: '原先结束时间',
+                                templet : "<div>{{layui.util.toDateString(d.packageBeforeEndTime, 'yyyy年MM月dd日 HH:mm:ss')}}</div>",
+                                width: 200,
+                                sort: true},
+                            {field: 'startUserName', title: '教练名称'},
+                            {field: 'right', title: '操作', toolbar: '#leaveBar',width:150},
+
+                        ]
+                    ],
+                    toolbar: '#leaveAdd'
+                }
+                table.render(option2);
+            }
+        });
+    </script>
+    <script type="text/html" id="leaveBar">
+        <div class="layui-btn-container">
+            <button class="layui-btn layui-btn-xs" lay-event="reviewLeave">操作</button>
+        </div>
+    </script>
+
+</head>
+<body>
+    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">
+        <legend>待审批请假</legend>
+    </fieldset>
+    <div class="layui-row">
+        <div class="layui-input-inline">
+            <input type="text" name="queryName" id="queryName"  placeholder="请输入教练名称" style="width: 200px;margin-right: 20px;" class="layui-input">
+        </div>
+        <button class="layui-btn layui-btn-sm" lay-event="queryleave" onclick="queryLeave()">查询</button>
+        <table id="leaveTable" lay-filter="leaveFilter"></table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>飞羽健身管理系统</title>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}">
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script>
+        //JavaScript代码区域
+        layui.use('element', function(){
+            var element = layui.element;
+            //模拟单页跳转
+            $(document).ready(function(){
+                $(".inFrame").click(function (e) {
+                    e.preventDefault();
+                    $("#iframeMain").attr("src",$(this).attr("href"));
+                    $("#iframeMain").height(document.documentElement.clientHeight);
+                });
+            });
+            $("#outLogin").click(function () {
+                var userCode = $("#userCode").val();
+                layui.use("layer",function(){
+                    var layer = layui.layer;
+                    layer.confirm('是否退出登录？', {icon: 3, title:'提示'}, function(index){
+                        $.ajax({
+                            url: '/outLogin',
+                            method: 'post',
+                            data: {userCode:userCode},
+                            dataType: 'JSON',
+                            success:function (data) {
+                                if(data.code == 200){
+                                    window.location.href = "/loginPage";
+                                }else{
+                                    layer.open({
+                                        content: data.msg
+                                        ,btn: ['确定']
+                                        ,yes: function(index, layero){
+                                            window.location.href = "/loginPage";
+                                        }
+                                        ,cancel: function(){
+                                            //右上角关闭回调
+                                            window.location.href = "/loginPage";
+                                        }
+                                    });
+                                }
+                            },error:function (data) {
+                                window.location.href = "/index";
+                            }
+
+                        })
+
+                    });
+                });
+
+
+                return false;
+            })
+
+        });
+    </script>
+</head>
+<body class="layui-layout-body">
+<input type="hidden" id="userCode" name="userCode" th:value="${session.userCode}">
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header">
+        <div class="layui-logo">飞羽健身</div>
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item">
+                <a href="javascript:;">
+                    <img th:src="@{/static/web/img/sport.jpg}" class="layui-nav-img">
+                    <span th:text="${session.userName}"></span>
+                </a>
+                <dl class="layui-nav-child">
+                    <dd><a href="/editAccountPwd" class="inFrame">修改密码</a></dd>
+                    <dd><a href="#" id="outLogin">退出登录</a></dd>
+                </dl>
+            </li>
+        </ul>
+    </div>
+
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+            <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+                <li class="layui-nav-item layui-nav-itemed">
+                    <a class="" href="javascript:;">用户管理</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="/student/init" class="inFrame">学员管理</a></dd>
+                        <dd><a href="/teacher/init" class="inFrame">教练管理</a></dd>
+                        <dd><a href="/account/init" class="inFrame">账号管理</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;">课程管理</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="/cource/typeInit" class="inFrame">分类管理</a></dd>
+                        <dd><a href="/cource/courseManageInit" class="inFrame">课程列表</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;">请假管理</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="/leave/noApprovalInit" class="inFrame">待审批请假</a></dd>
+                        <dd><a href="/leave/attendanceManageInit" class="inFrame">请假列表</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;">资金管理</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="/capital/profitStatisticalInit" class="inFrame">盈利统计</a></dd>
+                        <dd><a href="/capital/salaryManageInit" class="inFrame">工资管理</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;">报表统计</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="/report/userConsumptionInit" class="inFrame">用户消费</a></dd>
+                        <dd><a href="/report/courseStatisticsInit" class="inFrame">课程统计</a></dd>
+                    </dl>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 15px;">
+            <iframe id="iframeMain" src="" frameborder="no" border="0" scrolling="no" allowtransparency="yes" width="100%" ></iframe>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
