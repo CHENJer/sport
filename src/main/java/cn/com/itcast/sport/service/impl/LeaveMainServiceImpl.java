@@ -39,10 +39,10 @@ public class LeaveMainServiceImpl implements LeaveMainService {
             criteria.andStatusEqualTo(status);
         }
         if(startTime != null){
-            criteria.andPackageBeforeStartTimeEqualTo(startTime);
+            criteria.andPackageBeforeStartTimeGreaterThanOrEqualTo(startTime);
         }
         if(endTime != null){
-            criteria.andPackageBeforeStartTimeEqualTo(endTime);
+            criteria.andPackageBeforeStartTimeLessThanOrEqualTo(endTime);
         }
         criteria.andIsDeletedEqualTo("0");
         leaveMains = leaveMainMapper.selectByExampleWithBLOBs(example);
